@@ -1,3 +1,6 @@
 [package]
 name = "Neural-Engine"
 version = "0.0.1"
+
+[dependencies]
+fast-math = "0.1.1"
