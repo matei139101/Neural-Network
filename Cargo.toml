@@ -1,6 +1,7 @@
 [package]
 name = "Neural-Engine"
 version = "0.0.1"
+edition = "2021"
 
 [dependencies]
-fast-math = "0.1.1"
+rand = "0.8.5"
