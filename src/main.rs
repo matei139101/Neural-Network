@@ -1,8 +1,6 @@
 mod engine;
 mod utils;
 
-use rand::Rng;
-
 const INPUT_DATA: [[i8; 5]; 5]= [
     [1, 1, 1, 0, 1],
     [1, 0, 0, 1, 1],
@@ -23,9 +21,9 @@ fn main() {
 
     for layer in weights.iter_mut() {
         for weight in layer.iter_mut() {
-            *weight = rand::thread_rng().gen_range(-1.0..1.0);
+            *weight = utils::random_number(-1f32, 1f32);
         }
     }
 
-    engine::run_engine(&INPUT_DATA, &CORRECTION_DATA, &weights, 5);
+    engine::run_engine(&INPUT_DATA, &CORRECTION_DATA, &mut weights, 1);
 }
