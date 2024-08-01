@@ -13,6 +13,9 @@ const CORRECTION_DATA: [bool; 5] = [
     true, true, false, false, false
 ];
 
+///NOTES:
+///https://developers-dot-devsite-v2-prod.appspot.com/machine-learning/crash-course/backprop-scroll
+/// 
 fn main() {
     //println!("{}", rand::thread_rng().gen_range(-1.0..1.0));
     let mut weights: [[f32; 5]; 1] = [
