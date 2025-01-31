@@ -28,5 +28,5 @@ fn main() {
         }
     }
 
-    engine::run_engine(&INPUT_DATA, &CORRECTION_DATA, &mut weights, 1);
+    engine::run_engine(&INPUT_DATA, &CORRECTION_DATA, &mut weights, 100);
 }

@@ -24,7 +24,7 @@ fn network(input_index_data: &[[i8; 5]], weights: &mut[[f32; 5]], correction_dat
         let mut output: f32 = utils::dot_product(&input_index_data[input_index], &weights[0]);
         output = utils::sygmoid(output);
 
-        let correctness: f32 = utils::compare(output,correction_data[input_index]);
+        let correctness: f32 = utils::compare(output, correction_data[input_index] as i32 as f32);
 
         print!("O: {output} C: {correctness} ");
 
