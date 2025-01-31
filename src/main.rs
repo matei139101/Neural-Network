@@ -1,23 +1,22 @@
 mod engine;
 mod utils;
 
-const INPUT_DATA: [[i8; 5]; 5]= [
-    [1, 1, 1, 0, 1],
-    [1, 0, 0, 1, 1],
-    [0, 1, 1, 1, 0],
-    [0, 1, 0, 0, 1],
-    [1, 1, 1, 1, 0]
+const INPUT_DATA: [[f32; 5]; 5]= [
+    [1f32, 1f32, 1f32, 0f32, 1f32],
+    [1f32, 0f32, 0f32, 1f32, 1f32],
+    [0f32, 1f32, 1f32, 1f32, 0f32],
+    [0f32, 1f32, 0f32, 0f32, 1f32],
+    [1f32, 1f32, 1f32, 1f32, 0f32]
 ];
 
-const CORRECTION_DATA: [bool; 5] = [
-    true, true, false, false, false
+const CORRECTION_DATA: [f32; 5] = [
+    1f32, 1f32, 0f32, 0f32, 0f32
 ];
 
 ///NOTES:
 ///https://developers-dot-devsite-v2-prod.appspot.com/machine-learning/crash-course/backprop-scroll
 /// 
 fn main() {
-    //println!("{}", rand::thread_rng().gen_range(-1.0..1.0));
     let mut weights: [[f32; 5]; 1] = [
         [0.0; 5]
     ];
