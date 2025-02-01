@@ -1,25 +1,40 @@
 use crate::utils;
 
-pub fn setup_engine(input_index_data: &[[f32; 5]], correction_data: &[f32], weights: &mut[[f32; 5]], generations: u8) {
+pub fn setup_engine(input_index_data: &[[f32; 5]], correction_data: &[f32], weights: &mut[[f32; 5]], learning_state: bool, generations: u8) {
     let mut outputs: Vec<f32> = vec![];
     let mut corrected_outputs: Vec<f32> = vec![];
     let mut best_weights: [f32; 5] = [0f32; 5];
 
-    for generation in 0..generations {
-        for input_index in 0..input_index_data.len() {   
-            let output: [f32; 2] = network(input_index_data, weights, correction_data, input_index);
-
-            outputs.push(output[0]);
-            corrected_outputs.push(output[1]);
+    if learning_state {
+        for generation in 0..generations {
+            for input_index in 0..input_index_data.len() {   
+                let output: [f32; 2] = network(input_index_data, weights, correction_data, input_index);
+    
+                outputs.push(output[0]);
+                corrected_outputs.push(output[1]);
+            }
+    
+            learn(outputs.clone(), weights, &mut best_weights);
+    
+            println!("\nGeneration {generation} end.")
         }
-
-        learn(outputs.clone(), weights, &mut best_weights);
-
-        println!("\nGeneration {generation} end.")
+    } else {
+        execute_engine(generations, input_index_data, weights);
     }
 }
 
-fn network(input_index_data: &[[f32; 5]], weights: &mut[[f32; 5]], correction_data: &[f32], input_index: usize) -> [f32; 2] {
+pub fn execute_engine(generations: u8, inputs: &[[f32; 5]], weights: &[[f32; 5]]) -> Vec<f32>{
+    let mut outputs: Vec<f32> = vec![];
+    for input_index in 0..inputs.len() {   
+        let output: f32 = calculate_layer(&inputs[input_index], &weights[0]);
+
+         outputs.push(output);
+    }
+
+    return outputs;
+}
+
+fn network(input_index_data: &[[f32; 5]], weights: &[[f32; 5]], correction_data: &[f32], input_index: usize) -> [f32; 2] {
         let output: f32 = calculate_layer(&input_index_data[input_index], &weights[0]);
 
         let correctness: f32 = utils::compare(output, correction_data[input_index] as i32 as f32);
