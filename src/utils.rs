@@ -26,3 +26,11 @@ pub fn compare(input: f32, correction: f32) -> f32 {
 pub fn random_number(min_range: f32, max_range: f32 ) -> f32 {
     return rand::thread_rng().gen_range(min_range..max_range);
 }
+
+pub fn randomize_weights(weights: &mut [[f32; 5]; 1]) {
+    for layer in weights.iter_mut() {
+        for weight in layer.iter_mut() {
+            *weight = random_number(-1f32, 1f32);
+        }
+    }
+}

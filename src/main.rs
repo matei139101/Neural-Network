@@ -13,6 +13,7 @@ const CORRECTION_DATA: [f32; 5] = [
     1f32, 1f32, 0f32, 0f32, 0f32
 ];
 
+const learning_state: bool = false;
 ///NOTES:
 ///https://developers-dot-devsite-v2-prod.appspot.com/machine-learning/crash-course/backprop-scroll
 /// 
@@ -21,11 +22,17 @@ fn main() {
         [0.0; 5]
     ];
 
-    for layer in weights.iter_mut() {
-        for weight in layer.iter_mut() {
-            *weight = utils::random_number(-1f32, 1f32);
-        }
-    }
+    utils::randomize_weights(&mut weights);
 
-    engine::run_engine(&INPUT_DATA, &CORRECTION_DATA, &mut weights, 100);
+    //Setup engine values and variables
+    engine::setup_engine(&INPUT_DATA, &CORRECTION_DATA, &mut weights, 100);
+
+    //Run engine calculus
+
+    //Run engine learning
+    //  Set up generations
+    //  Loop generations
+    //  Learn
+
+    //Exit
 }

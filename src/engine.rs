@@ -1,11 +1,11 @@
 use crate::utils;
 
-pub fn run_engine(input_index_data: &[[f32; 5]], correction_data: &[f32], weights: &mut[[f32; 5]], generations: u8) {
+pub fn setup_engine(input_index_data: &[[f32; 5]], correction_data: &[f32], weights: &mut[[f32; 5]], generations: u8) {
     let mut outputs: Vec<f32> = vec![];
     let mut corrected_outputs: Vec<f32> = vec![];
     let mut best_weights: [f32; 5] = [0f32; 5];
 
-    for generation in 0..generations {    
+    for generation in 0..generations {
         for input_index in 0..input_index_data.len() {   
             let output: [f32; 2] = network(input_index_data, weights, correction_data, input_index);
 
@@ -20,8 +20,7 @@ pub fn run_engine(input_index_data: &[[f32; 5]], correction_data: &[f32], weight
 }
 
 fn network(input_index_data: &[[f32; 5]], weights: &mut[[f32; 5]], correction_data: &[f32], input_index: usize) -> [f32; 2] {
-        let mut output: f32 = utils::dot_product(&input_index_data[input_index], &weights[0]);
-        output = utils::sygmoid(output);
+        let output: f32 = calculate_layer(&input_index_data[input_index], &weights[0]);
 
         let correctness: f32 = utils::compare(output, correction_data[input_index] as i32 as f32);
 
@@ -30,6 +29,15 @@ fn network(input_index_data: &[[f32; 5]], weights: &mut[[f32; 5]], correction_da
         return [output, correctness];
 }
 
+//Only calculates for one node as of now
+fn calculate_layer(vector: &[f32; 5], weights: &[f32; 5]) -> f32 {
+    let mut output: f32 = utils::dot_product(vector, weights);
+    output = utils::sygmoid(output);
+
+    return output;
+}
+
+//This needs to be redone somehow to be more readable and less repeating
 fn learn(outputs: Vec<f32>, weights: &mut[[f32; 5]], best_weights: &mut [f32; 5]) {
     let mut newest_output: f32 = 0f32;
     let mut previous_output: f32 = 0f32;
