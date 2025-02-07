@@ -1,9 +1,13 @@
-pub enum debug_tier {
-    HIGH,
-    MEDIUM,
-    LOW
+//The tag is to suppress warnings while still working out the functions
+#[allow(dead_code)]
+pub enum DebugTier {
+    HIGH = 10,
+    MEDIUM = 5,
+    LOW = 1
 }
 
-pub fn log(tier: debug_tier, message: &str) {
-    println!("{message}");
+pub fn log(tier: DebugTier, message: &str) {
+    match tier {
+        DebugTier::LOW | DebugTier::MEDIUM | DebugTier::HIGH => { println!("{message}") }
+    }
 }

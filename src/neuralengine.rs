@@ -5,15 +5,15 @@ pub fn setup_engine(input_index_data: &[[f32; 5]], correction_data: &[f32], weig
     if learning_state {
         train_network(generations, input_index_data, weights, correction_data);
     } else {
-        execute_engine(input_index_data, weights);
+        execute_network(input_index_data, weights);
     }
 }
 
-pub fn execute_engine(inputs: &[[f32; 5]], weights: &[[f32; 5]]) {
+fn execute_network(inputs: &[[f32; 5]], weights: &[[f32; 5]]) {
     for input_index in 0..inputs.len() {
         let output: f32 = calculate_layer(&inputs[input_index], &weights[0]);
 
-        logger::log(logger::debug_tier::HIGH, output.to_string().as_str());
+        logger::log(logger::DebugTier::HIGH, output.to_string().as_str());
     }
 }
 
