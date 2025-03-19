@@ -6,7 +6,7 @@ pub enum DebugTier {
     LOW = 1
 }
 
-pub fn log(tier: DebugTier, message: &str) {
+pub fn log(tier: DebugTier, message: String) {
     match tier {
         DebugTier::LOW | DebugTier::MEDIUM | DebugTier::HIGH => { println!("{message}") }
     }

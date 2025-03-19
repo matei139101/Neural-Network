@@ -1,36 +1,13 @@
-mod neuralengine;
-mod utils;
+use model::{DenseLayer, Model};
+
+mod math;
 mod logger;
+mod model;
 
-const INPUT_DATA: [[f32; 5]; 1] = [
-    [1f32, 1f32, 1f32, 0f32, 1f32]
-];
-
-const INPUT_TRAINING_DATA: [[f32; 5]; 5] = [
-    [1f32, 1f32, 1f32, 0f32, 1f32],
-    [1f32, 0f32, 0f32, 1f32, 1f32],
-    [0f32, 1f32, 1f32, 1f32, 0f32],
-    [0f32, 1f32, 0f32, 0f32, 1f32],
-    [1f32, 1f32, 1f32, 1f32, 0f32]
-];
-
-const CORRECTION_DATA: [f32; 5] = [
-    1f32, 1f32, 0f32, 0f32, 1f32
-];
-
-const LEARNING_STATE: bool = false;
-///NOTES:
-///https://developers-dot-devsite-v2-prod.appspot.com/machine-learning/crash-course/backprop-scroll
-/// 
 fn main() {
-    let mut weights: [[f32; 5]; 1] = [
-        [0.0; 5]
-    ];
-
-    utils::randomize_weights(&mut weights);
-
-    let input: &[[f32; 5]] = if LEARNING_STATE { &INPUT_TRAINING_DATA } else { &INPUT_DATA };
-
-    //Setup engine values and variables
-    neuralengine::setup_engine(input, &CORRECTION_DATA, &mut weights, LEARNING_STATE, 100);
+    let mut model: Model = Model::new(vec![2f32, 2f32, 2f32, 2f32, 2f32]);
+    model.add_layer(Box::new(DenseLayer::new(4, 8)));
+    model.add_layer(Box::new(DenseLayer::new(4, 8)));
+    model.add_layer(Box::new(DenseLayer::new(4, 8)));
+    model.run();
 }
