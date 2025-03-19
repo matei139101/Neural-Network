@@ -2,18 +2,20 @@ use std::{vec};
 use crate::{logger::{self, DebugTier}, math};
 
 pub trait Layer {
-    fn run (&self, input: &Vec<f32>) -> Vec<f32>;
+    fn process (&self, input: &Vec<f32>, weights: &Vec<f32>) -> Vec<f32>;
 }
 
 pub struct Model {
     input: Vec<f32>,
+    weights: Vec<Vec<f32>>,
     layers: Vec<Box<dyn Layer>>
 }
 
 impl Model {
-    pub fn new(input: Vec<f32>) -> Self {
+    pub fn new(input: Vec<f32>, weights: Vec<Vec<f32>>) -> Self {
         Model {
             input: input,
+            weights: weights,
             layers: vec![],
         }
     }
@@ -25,8 +27,8 @@ impl Model {
     pub fn run(&self) {
         let mut output: Vec<f32> = self.input.clone();
 
-        for layer in &self.layers {
-            output = layer.run(&output);
+        for (index, layer) in self.layers.iter().enumerate() {
+            output = layer.process(&output, &self.weights[index]);
         }
     }
 }
@@ -43,11 +45,11 @@ impl DenseLayer {
 }
 
 impl Layer for DenseLayer {
-    fn run(&self, input: &Vec<f32>) -> Vec<f32> {
+    fn process(&self, input: &Vec<f32>, weights: &Vec<f32>) -> Vec<f32> {
         let mut output: Vec<f32> = vec![];
 
-        for _neuron in 1..self.neurons {
-            output.push(math::dot_product(&input, &input));
+        for _neuron in 0..self.neurons {
+            output.push(math::dot_product(&input, &weights));
         }
 
         logger::log(DebugTier::HIGH, format!("Inputs: {}, Neurons: {}, Output: {:?}", self.inputs, self.neurons, output));
