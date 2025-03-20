@@ -1,15 +1,19 @@
-use std::vec;
+use std::{usize, vec};
 use crate::{logger::{self, DebugTier}, math};
 
 pub trait Layer {
     fn process (&self, input: &Vec<f32>, weights: &Vec<Vec<f32>>) -> Vec<f32>;
     fn make_weights (&self) -> Vec<Vec<f32>>;
+    fn allign(&self, alligner: &usize) -> bool;
+    fn get_inputs(&self) -> usize;
+    fn get_neurons(&self) -> usize;
 }
 
 pub struct Model {
     input: Vec<f32>,
     weights: Vec<Vec<Vec<f32>>>,
-    layers: Vec<Box<dyn Layer>>
+    layers: Vec<Box<dyn Layer>>,
+    ok: bool
 }
 
 impl Model {
@@ -18,6 +22,7 @@ impl Model {
             input: input,
             weights: vec![],
             layers: vec![],
+            ok: true
         }
     }
 
@@ -26,19 +31,29 @@ impl Model {
     }
 
     pub fn predict(&self) {
-        let mut output: Vec<f32> = self.input.clone();
+        if !self.ok { return };
 
+        let mut output: Vec<f32> = self.input.clone();
         for (index, layer) in self.layers.iter().enumerate() {
             output = layer.process(&output, &self.weights[index]);
         }
     }
 
     pub fn fit(&mut self) {
-        for layer in &self.layers {
+        let mut size: usize = self.input.len();
+
+        for (index, layer) in self.layers.iter().enumerate() {
+            if !layer.allign(&size) {
+                logger::log(DebugTier::HIGH, format!("Missalignment on layer {}. Got {} but have {} inputs", index, &size, layer.get_inputs()));
+                self.ok = false;
+                break;
+            }
+
+            size = layer.get_neurons();
             self.weights.push(layer.make_weights());
         }
 
-        logger::log(DebugTier::MEDIUM, format!("Weights: {:?}", self.weights));
+        logger::log(DebugTier::LOW, format!("Weights: {:?}", self.weights));
     }
 }
 
@@ -57,11 +72,11 @@ impl Layer for Dense {
     fn process(&self, input: &Vec<f32>, weights: &Vec<Vec<f32>>) -> Vec<f32> {
         let mut output: Vec<f32> = vec![];
 
-        for neuron in 0..self.neurons {
-            output.push(math::dot_product(&input, &weights[neuron]));
+        for neuron in 1..self.neurons {
+            output.push(math::dot_product(&input, &weights[neuron - 1]));
         }
 
-        logger::log(DebugTier::HIGH, format!("Inputs: {}, Neurons: {}, Output: {:?}", self.inputs, self.neurons, output));
+        logger::log(DebugTier::MEDIUM, format!("Inputs: {}, Neurons: {}, Output: {:?}", self.inputs, self.neurons, output));
 
         return output;
     }
@@ -78,7 +93,19 @@ impl Layer for Dense {
 
             layer_weights.push(input_weights);
         }
-
+        
         return layer_weights;
+    }
+
+    fn allign (&self, aligner: &usize) -> bool {
+        return aligner == &self.inputs;
+    }
+
+    fn get_inputs(&self) -> usize {
+        return self.inputs;
+    }
+
+    fn get_neurons(&self) -> usize {
+        return self.neurons;
     }
 }
