@@ -1,3 +1,3 @@
 pub trait Activation {
-    fn calculate(inputs: Vec<f32>) -> Vec<f32>;
+    fn calculate(&self, inputs: Vec<f32>) -> Vec<f32>;
 }

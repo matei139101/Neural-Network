@@ -1,23 +1,28 @@
-use crate::{utils::logger::{self, DebugTier}, utils::math};
+use crate::{activations::activation::Activation, utils::{logger::{self, DebugTier}, math}};
 use super::layer::Layer;
 
 
 pub struct Dense {
     inputs: usize,
-    neurons: usize
+    neurons: usize,
+    activation: Box<dyn Activation>
 }
 
 impl Dense {
-    pub fn new(inputs: usize, neurons: usize) -> Self {
-        Dense { inputs: (inputs), neurons: (neurons) }
+    pub fn new(inputs: usize, neurons: usize, activation: Box<dyn Activation>) -> Self {
+        Dense { 
+            inputs: inputs,
+            neurons: neurons,
+            activation: activation
+        }
     }
 }
 
 impl Layer for Dense {
     fn process(&self, input: &Vec<f32>, weights: &Vec<Vec<f32>>) -> Vec<f32> {
-        let output: Vec<f32> = math::dot_product(&input, &weights);
+        let output: Vec<f32> = self.activation.calculate(math::dot_product(&input, &weights));
 
-        logger::log(DebugTier::MEDIUM, format!("Inputs: {}, Neurons: {}", self.inputs, self.neurons));
+        logger::log(DebugTier::MEDIUM, format!("Inputs: {}, Neurons: {}, Activated Output: {:?}", self.inputs, self.neurons, output));
 
         return output;
     }
@@ -29,7 +34,7 @@ impl Layer for Dense {
             let mut input_weights: Vec<f32> = vec![];
 
             for _weight in 0..self.neurons {
-                input_weights.push(math::random_number(0.0, 1.0));
+                input_weights.push(math::random_number(-1.0, 1.0));
             }
 
             layer_weights.push(input_weights);
