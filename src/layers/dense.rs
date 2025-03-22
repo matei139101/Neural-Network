@@ -10,6 +10,8 @@ pub struct Dense {
 
 impl Dense {
     pub fn new(inputs: usize, neurons: usize, activation: Box<dyn Activation>) -> Self {
+        logger::log(DebugTier::MEDIUM, format!("Layer created with {} inputs and {} neurons", inputs, neurons));
+
         Dense { 
             inputs: inputs,
             neurons: neurons,
@@ -20,10 +22,11 @@ impl Dense {
 
 impl Layer for Dense {
     fn process(&self, input: &Vec<f32>, weights: &Vec<Vec<f32>>) -> Vec<f32> {
+        logger::log(DebugTier::LOW, format!("Processing layer... "));
+
         let output: Vec<f32> = self.activation.calculate(math::dot_product(&input, &weights));
 
-        logger::log(DebugTier::MEDIUM, format!("Inputs: {}, Neurons: {}, Activated Output: {:?}", self.inputs, self.neurons, output));
-
+        logger::logln(DebugTier::LOW, format!("Done!"));
         return output;
     }
 

@@ -22,3 +22,7 @@ pub fn random_number(min_range: f32, max_range: f32 ) -> f32 {
 pub fn sigmoid(input: f32) -> f32 {
     return 1.0 / (1.0 + f32::exp(-input));
 }
+
+pub fn meansquarederror(value: &f32, correct_value: &f32) -> f32 {
+    return (value - correct_value) * (value - correct_value);
+}

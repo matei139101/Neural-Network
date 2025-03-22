@@ -8,6 +8,12 @@ pub enum DebugTier {
 
 pub fn log(tier: DebugTier, message: String) {
     match tier {
-        DebugTier::LOW | DebugTier::MEDIUM | DebugTier::HIGH => { println!("{message}") }
+        DebugTier::LOW | DebugTier::MEDIUM | DebugTier::HIGH => { print!("\n{message}") }
+    }
+}
+
+pub fn logln(tier: DebugTier, message: String) {
+    match tier {
+        DebugTier::LOW | DebugTier::MEDIUM | DebugTier::HIGH => { print!("{message}") }
     }
 }

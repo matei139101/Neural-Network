@@ -1,20 +1,22 @@
 use std::{usize, vec};
-use crate::{layers::layer::Layer, utils::logger::{self, DebugTier}};
+use crate::{layers::layer::Layer, lossfunctions::lossfunction::{self, LossFunction}, utils::logger::{self, DebugTier}};
 
 pub struct Model {
     input: Vec<f32>,
     weights: Vec<Vec<Vec<f32>>>,
     layers: Vec<Box<dyn Layer>>,
-    outputs: Vec<Vec<f32>>
+    outputs: Vec<Vec<f32>>,
+    lossfunction: Box<dyn LossFunction>
 }
 
 impl Model {
-    pub fn new(input: Vec<f32>) -> Self {
+    pub fn new(input: Vec<f32>, lossfunction: Box<dyn LossFunction>) -> Self {
         Model {
-            input: input,
+            input,
             weights: vec![],
             layers: vec![],
-            outputs: vec![]
+            outputs: vec![],
+            lossfunction
         }
     }
 
@@ -44,5 +46,9 @@ impl Model {
         }
 
         logger::log(DebugTier::LOW, format!("Weights: {:?}", self.weights));
+    }
+
+    pub fn train(&self, correct_values: Vec<f32>) {
+        logger::log(DebugTier::HIGH, format!("Error: {:?}", self.lossfunction.single_calculate(self.outputs[self.outputs.len() - 1].clone(), correct_values)));
     }
 }
