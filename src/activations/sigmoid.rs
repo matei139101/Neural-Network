@@ -1,4 +1,4 @@
-use crate::utils::math;
+use crate::utils::math::{self, sigmoid};
 
 use super::activation::Activation;
 
@@ -15,5 +15,9 @@ impl Activation for Sigmoid {
         }
 
         return results;
+    }
+
+    fn derivative(&self, net_input: f32) -> f32 {
+        return sigmoid(net_input) * (1f32 - sigmoid(net_input));
     }
 }

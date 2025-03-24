@@ -16,4 +16,8 @@ impl Activation for Tanh {
 
         return results;
     }
+
+    fn derivative(&self, net_input: f32) -> f32 {
+        todo!();
+    }
 }

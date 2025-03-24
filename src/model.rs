@@ -48,7 +48,11 @@ impl Model {
         logger::log(DebugTier::LOW, format!("Weights: {:?}", self.weights));
     }
 
-    pub fn train(&self, correct_values: Vec<f32>) {
+    pub fn train(&self, correct_values: Vec<f32>, epochs: usize) {
         logger::log(DebugTier::HIGH, format!("Error: {:?}", self.lossfunction.single_calculate(self.outputs[self.outputs.len() - 1].clone(), correct_values)));
+
+        for epoch in 1..epochs {
+            
+        }
     }
 }

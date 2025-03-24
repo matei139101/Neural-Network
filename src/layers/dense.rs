@@ -57,4 +57,10 @@ impl Layer for Dense {
     fn get_neurons(&self) -> usize {
         return self.neurons;
     }
+
+    fn derivative(&self, learning_rate: f32, input: f32, old_weight: f32, derivative_activation: f32, derivative_loss: f32) -> f32 {
+        let dLdw = derivative_loss * derivative_activation * input;
+        let new_weight: f32 = old_weight - (old_weight * learning_rate * dLdw);
+        return new_weight;
+    }
 }

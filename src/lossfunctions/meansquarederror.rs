@@ -34,4 +34,8 @@ impl LossFunction for MeanSquaredError {
 
         return error / inputs.len() as f32;
     }
+
+    fn derivative(&self, loss: f32, target: f32) -> f32 {
+        return 2f32 * (loss - target);
+    }
 }
