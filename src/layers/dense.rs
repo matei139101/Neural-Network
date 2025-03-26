@@ -32,6 +32,7 @@ impl Layer for Dense {
     fn process(&mut self, input: &Vec<f32>, weights: &Vec<Vec<f32>>) -> &Vec<f32> {
         logger::log(DebugTier::LOW, format!("Processing layer... "));
 
+        self.input_values = input.clone();
         self.net_output = math::dot_product(&input, &weights);
         self.activated_output = self.activation.calculate(&self.net_output);
 
@@ -71,17 +72,19 @@ impl Layer for Dense {
         return &self.weights;
     }
 
-    fn get_derivatives(&self, inputs: &Vec<f32>, weights: &Vec<Vec<f32>>, backwards_derivatives: &Vec<f32>) -> Vec<f32> {
-        let mut derivatives: Vec<f32> = vec![];
-
-
-        for (index, input) in inputs.iter().enumerate() {
-            let mut derivative: f32 = 0f32;
-            for weight in weights {
-                //derivative = derivative + input * self.activation.derivative(input * weight);
-            }
+    fn back_propagate(&mut self, backwards_derivatives: &Vec<f32>, learning_rate: f32) -> Vec<f32> {       
+        let mut net_derivatives: Vec<f32> = vec![];
+        for net_output_value in &self.net_output {
+            net_derivatives.push(self.activation.derivative(&net_output_value));
         }
 
-        return derivatives;
+        let mut new_backwards_derivatives: Vec<f32> = vec![];
+        for  {
+            for weight in 0..self.weights[weight_set].len()-1 {
+
+            }
+        }
+        //println!("{:?}", input_weight_derivatives );
+        return net_derivatives;
     }
 }

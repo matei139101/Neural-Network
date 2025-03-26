@@ -6,5 +6,5 @@ pub trait Layer {
     fn process (&mut self, input: &Vec<f32>, weights: &Vec<Vec<f32>>) -> &Vec<f32>;
     fn make_weights (&mut self);
     fn allign(&self, alligner: &usize) -> bool;
-    fn get_derivatives(&self, inputs: &Vec<f32>, weights: &Vec<Vec<f32>>, backwards_derivative: &Vec<f32>) -> Vec<f32>;
+    fn back_propagate(&mut self, backwards_derivative: &Vec<f32>, learning_rate: f32) -> Vec<f32>;
 }

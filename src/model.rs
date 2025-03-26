@@ -62,8 +62,23 @@ impl Model {
         return losses;
     }
 
-    pub fn train(&self) {
+    pub fn train(&mut self, targets: &Vec<f32>, learning_rate: f32) {
+        let mut loss_derivatives: Vec<f32> = vec![];
 
-        todo!()
+        for correlated_output in self.output.iter().zip(targets) {
+            loss_derivatives.push(self.lossfunction.derivative(correlated_output.0, correlated_output.1));
+        }
+
+        let mut weight_derivatives: Vec<Vec<f32>> = vec![];
+        weight_derivatives.push(loss_derivatives);
+
+        //logger::log(DebugTier::HIGH, format!("Layer: {}, Derivatives: {:?}", layer, &weight_derivatives[&weight_derivatives.len()-1]));
+
+        for layer in (0..self.layers.len()).rev() {
+            println!("Layer: {}", layer);
+            weight_derivatives.push(self.layers[layer].back_propagate(&weight_derivatives[&weight_derivatives.len()-1], learning_rate));
+        }
+
+        println!("{:?}", weight_derivatives);
     }
 }
