@@ -7,7 +7,7 @@ pub struct Sigmoid {
 }
 
 impl Activation for Sigmoid {
-    fn calculate(&self, inputs: Vec<f32>) -> Vec<f32> {
+    fn calculate(&self, inputs: &Vec<f32>) -> Vec<f32> {
         let mut results: Vec<f32> = vec![];
 
         for input in inputs {
@@ -17,7 +17,7 @@ impl Activation for Sigmoid {
         return results;
     }
 
-    fn derivative(&self, net_input: f32) -> f32 {
+    fn derivative(&self, net_input: &f32) -> f32 {
         return sigmoid(net_input) * (1f32 - sigmoid(net_input));
     }
 }

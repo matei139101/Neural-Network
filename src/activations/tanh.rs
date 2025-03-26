@@ -7,7 +7,7 @@ pub struct Tanh {
 }
 
 impl Activation for Tanh {
-    fn calculate(&self, inputs: Vec<f32>) -> Vec<f32> {
+    fn calculate(&self, inputs: &Vec<f32>) -> Vec<f32> {
         let mut results: Vec<f32> = vec![];
 
         for input in inputs {
@@ -17,7 +17,7 @@ impl Activation for Tanh {
         return results;
     }
 
-    fn derivative(&self, net_input: f32) -> f32 {
+    fn derivative(&self, net_input: &f32) -> f32 {
         todo!();
     }
 }

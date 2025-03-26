@@ -5,7 +5,11 @@ use super::layer::Layer;
 pub struct Dense {
     inputs: usize,
     neurons: usize,
-    activation: Box<dyn Activation>
+    activation: Box<dyn Activation>,
+    input_values: Vec<f32>,
+    weights: Vec<Vec<f32>>,
+    net_output: Vec<f32>,
+    activated_output: Vec<f32>
 }
 
 impl Dense {
@@ -15,22 +19,27 @@ impl Dense {
         Dense { 
             inputs: inputs,
             neurons: neurons,
-            activation: activation
+            activation: activation,
+            input_values: vec![],
+            weights: vec![],
+            net_output: vec![],
+            activated_output: vec![]
         }
     }
 }
 
 impl Layer for Dense {
-    fn process(&self, input: &Vec<f32>, weights: &Vec<Vec<f32>>) -> Vec<f32> {
+    fn process(&mut self, input: &Vec<f32>, weights: &Vec<Vec<f32>>) -> &Vec<f32> {
         logger::log(DebugTier::LOW, format!("Processing layer... "));
 
-        let output: Vec<f32> = self.activation.calculate(math::dot_product(&input, &weights));
+        self.net_output = math::dot_product(&input, &weights);
+        self.activated_output = self.activation.calculate(&self.net_output);
 
         logger::logln(DebugTier::LOW, format!("Done!"));
-        return output;
+        return &self.activated_output;
     }
 
-    fn make_weights (&self) -> Vec<Vec<f32>> {
+    fn make_weights (&mut self) {
         let mut layer_weights: Vec<Vec<f32>> = vec![];
 
         for _input in 0..self.inputs {
@@ -43,7 +52,7 @@ impl Layer for Dense {
             layer_weights.push(input_weights);
         }
         
-        return layer_weights;
+        self.weights = layer_weights;
     }
 
     fn allign (&self, aligner: &usize) -> bool {
@@ -58,9 +67,21 @@ impl Layer for Dense {
         return self.neurons;
     }
 
-    fn derivative(&self, learning_rate: f32, input: f32, old_weight: f32, derivative_activation: f32, derivative_loss: f32) -> f32 {
-        let dLdw = derivative_loss * derivative_activation * input;
-        let new_weight: f32 = old_weight - (old_weight * learning_rate * dLdw);
-        return new_weight;
+    fn get_weights(&self) -> &Vec<Vec<f32>> {
+        return &self.weights;
+    }
+
+    fn get_derivatives(&self, inputs: &Vec<f32>, weights: &Vec<Vec<f32>>, backwards_derivatives: &Vec<f32>) -> Vec<f32> {
+        let mut derivatives: Vec<f32> = vec![];
+
+
+        for (index, input) in inputs.iter().enumerate() {
+            let mut derivative: f32 = 0f32;
+            for weight in weights {
+                //derivative = derivative + input * self.activation.derivative(input * weight);
+            }
+        }
+
+        return derivatives;
     }
 }
