@@ -48,10 +48,6 @@ impl Model {
 
     pub fn train(&mut self, input: &Vec<Vec<f32>>, targets: &Vec<Vec<f32>>, learning_rate: f32, epochs: usize) {
         for epoch in 0..epochs {
-            for layer in &mut self.layers {
-                layer.clear_layer();
-            }
-
             let zipped_input_targets = input.iter().zip(targets);
             let mut epoch_output: Vec<Vec<f32>> = vec![];
             for (zipped_input, zipped_targets) in zipped_input_targets {

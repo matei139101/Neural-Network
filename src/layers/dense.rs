@@ -102,13 +102,13 @@ impl Layer for Dense {
 
     fn train(&mut self, learning_rate: f32) {
         logger::log(DebugTier::LOW, format!("Old layer weights: {:?}", self.weights));
-
-        for (input, weight_derivative_set) in math::avg_third_dimension(self.derivatives.clone()).iter().enumerate() {
+        for (input, weight_derivative_set) in math::average_third_dimension(self.derivatives.clone()).iter().enumerate() {
             for (index, derivative) in weight_derivative_set.iter().enumerate() {
                 self.weights[input][index] -= self.weights[input][index] * derivative * learning_rate;
             }
         }
 
+        self.clear_layer();
         logger::log(DebugTier::LOW, format!("New layer weights: {:?}", self.weights));
     }
 }
