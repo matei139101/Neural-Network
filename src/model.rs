@@ -2,18 +2,14 @@ use std::{usize, vec};
 use crate::{layers::layer::Layer, lossfunctions::lossfunction::LossFunction, utils::logger::{self, DebugTier}};
 
 pub struct Model {
-    input: Vec<f32>,
-    output: Vec<f32>,
     weights: Vec<Vec<Vec<f32>>>,
     layers: Vec<Box<dyn Layer>>,
     lossfunction: Box<dyn LossFunction>
 }
 
 impl Model {
-    pub fn new(input: Vec<f32>, lossfunction: Box<dyn LossFunction>) -> Self {
+    pub fn new(lossfunction: Box<dyn LossFunction>) -> Self {
         Model {
-            output: vec![],
-            input,
             weights: vec![],
             layers: vec![],
             lossfunction
@@ -24,61 +20,77 @@ impl Model {
         self.layers.push(layer);
     }
 
-    pub fn predict(&mut self) {
-        let mut output: Vec<f32> = self.input.clone();
-
-        for (index, layer) in self.layers.iter_mut().enumerate() {
-            output = layer.process(&output, &self.weights[index]).to_vec();
+    pub fn predict(&mut self, input: &Vec<f32>) -> Vec<f32> {
+        logger::log(DebugTier::HIGH, format!("Starting model..."));
+        
+        //TO-DO: I don't like this clone...
+        let mut output: Vec<f32> = input.clone();
+        for layer in &mut self.layers {
+            output = layer.process(&output).to_vec();
         }
 
-        self.output = output;
+        logger::log(DebugTier::HIGH, format!("Ended model"));
+        return output;
     }
 
-    pub fn fit(&mut self) {
-        let mut size: usize = self.input.len();
+    pub fn prepare(&mut self) {
+        let mut size: usize = self.layers[0].get_inputs();
 
         for (index, layer) in self.layers.iter_mut().enumerate() {
-            if !layer.allign(&size) {
-                panic!("Missalignment on layer {}. Got {} but have {} inputs", index, &size, layer.get_inputs());
-            }
+            if !layer.allign(&size) { panic!("Missalignment on layer {}. Got {} but have {} inputs", index, &size, layer.get_inputs()); }
 
             size = layer.get_neurons();
             layer.make_weights();
+            //TO-DO: I don't like this clone
             self.weights.push(layer.get_weights().clone());
         }
-
-        logger::log(DebugTier::LOW, format!("Weights: {:?}", self.weights));
     }
 
-    pub fn calculate_loss(&self, output: &Vec<f32>, targets: &Vec<f32>) -> Vec<f32> {
-        let mut losses: Vec<f32> = vec![];
+    pub fn train(&mut self, input: &Vec<Vec<f32>>, targets: &Vec<Vec<f32>>, learning_rate: f32, epochs: usize) {
+        for epoch in 0..epochs {
+            for layer in &mut self.layers {
+                layer.clear_layer();
+            }
 
-        //Naming is hard
-        //TO-DO: Make a proper name insteado of x
-        for x in output.iter().zip(targets) {
-            losses.push(self.lossfunction.calculate(&x.0, &x.1));
+            let zipped_input_targets = input.iter().zip(targets);
+            let mut epoch_output: Vec<Vec<f32>> = vec![];
+            for (zipped_input, zipped_targets) in zipped_input_targets {
+                let output: Vec<f32> = self.predict(zipped_input);
+                epoch_output.push(output.clone());
+
+                self.back_propagate(&output, zipped_targets);
+            }
+
+            for layer in &mut self.layers {
+                layer.train(learning_rate);
+            }
+
+            logger::log(DebugTier::IMPORTANT, format!("Epoch: {}, Loss: {}", epoch+1, self.loss(&epoch_output, targets)));
+        }
+    }
+
+    fn loss(&self, output: &Vec<Vec<f32>>, targets: &Vec<Vec<f32>>) -> f32 {
+        let mut loss: f32 = 0f32;
+        let zipped_output_targets = output.iter().zip(targets);
+        let count = zipped_output_targets.len() as f32;
+
+        for (zipped_output, zipped_target) in zipped_output_targets {
+            loss += self.lossfunction.calculate_set(zipped_output, zipped_target)
         }
 
-        return losses;
+        return loss / count;
     }
 
-    pub fn train(&mut self, targets: &Vec<f32>, learning_rate: f32) {
+    fn back_propagate(&mut self, output: &Vec<f32>, targets: &Vec<f32>) {
         let mut loss_derivatives: Vec<f32> = vec![];
-
-        for correlated_output in self.output.iter().zip(targets) {
-            loss_derivatives.push(self.lossfunction.derivative(correlated_output.0, correlated_output.1));
+        for (zipped_output, zipped_target) in output.iter().zip(targets) {
+            loss_derivatives.push(self.lossfunction.derivative(zipped_output, zipped_target));
         }
 
         let mut weight_derivatives: Vec<Vec<f32>> = vec![];
         weight_derivatives.push(loss_derivatives);
-
-        //logger::log(DebugTier::HIGH, format!("Layer: {}, Derivatives: {:?}", layer, &weight_derivatives[&weight_derivatives.len()-1]));
-
         for layer in (0..self.layers.len()).rev() {
-            println!("Layer: {}", layer);
-            weight_derivatives.push(self.layers[layer].back_propagate(&weight_derivatives[&weight_derivatives.len()-1], learning_rate));
+            weight_derivatives.push(self.layers[layer].back_propagate(&weight_derivatives[&weight_derivatives.len()-1]));
         }
-
-        println!("{:?}", weight_derivatives);
     }
 }
