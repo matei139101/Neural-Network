@@ -71,7 +71,7 @@ impl Model {
         let count = zipped_output_targets.len() as f32;
 
         for (zipped_output, zipped_target) in zipped_output_targets {
-            loss += self.lossfunction.calculate_set(zipped_output, zipped_target)
+            loss += self.lossfunction.calculate(zipped_output, zipped_target)
         }
 
         return loss / count;
