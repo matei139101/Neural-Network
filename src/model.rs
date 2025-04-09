@@ -2,8 +2,9 @@ use std::{usize, vec};
 use crate::{layers::layer::Layer, lossfunctions::lossfunction::LossFunction, utils::logger::{self, DebugTier}};
 
 pub struct Model {
+    pub layers: Vec<Box<dyn Layer>>,
+
     weights: Vec<Vec<Vec<f32>>>,
-    layers: Vec<Box<dyn Layer>>,
     lossfunction: Box<dyn LossFunction>
 }
 
@@ -46,26 +47,7 @@ impl Model {
         }
     }
 
-    pub fn train(&mut self, input: &Vec<Vec<f32>>, targets: &Vec<Vec<f32>>, learning_rate: f32, epochs: usize) {
-        for epoch in 0..epochs {
-            let zipped_input_targets = input.iter().zip(targets);
-            let mut epoch_output: Vec<Vec<f32>> = vec![];
-            for (zipped_input, zipped_targets) in zipped_input_targets {
-                let output: Vec<f32> = self.predict(zipped_input);
-                epoch_output.push(output.clone());
-
-                self.back_propagate(&output, zipped_targets);
-            }
-
-            for layer in &mut self.layers {
-                layer.train(learning_rate);
-            }
-
-            logger::log(DebugTier::IMPORTANT, format!("Epoch: {}, Loss: {}", epoch+1, self.loss(&epoch_output, targets)));
-        }
-    }
-
-    fn loss(&self, output: &Vec<Vec<f32>>, targets: &Vec<Vec<f32>>) -> f32 {
+    pub fn loss(&self, output: &Vec<Vec<f32>>, targets: &Vec<Vec<f32>>) -> f32 {
         let mut loss: f32 = 0f32;
         let zipped_output_targets = output.iter().zip(targets);
         let count = zipped_output_targets.len() as f32;
@@ -77,7 +59,7 @@ impl Model {
         return loss / count;
     }
 
-    fn back_propagate(&mut self, output: &Vec<f32>, targets: &Vec<f32>) {
+    pub fn back_propagate(&mut self, output: &Vec<f32>, targets: &Vec<f32>) {
         let mut loss_derivatives: Vec<f32> = vec![];
         for (zipped_output, zipped_target) in output.iter().zip(targets) {
             loss_derivatives.push(self.lossfunction.derivative(zipped_output, zipped_target));
