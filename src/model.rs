@@ -24,7 +24,6 @@ impl Model {
     pub fn predict(&mut self, input: &Vec<f32>) -> Vec<f32> {
         logger::log(DebugTier::HIGH, format!("Starting model..."));
         
-        //TO-DO: I don't like this clone...
         let mut output: Vec<f32> = input.clone();
         for layer in &mut self.layers {
             output = layer.process(&output).to_vec();
@@ -62,7 +61,7 @@ impl Model {
     pub fn back_propagate(&mut self, output: &Vec<f32>, targets: &Vec<f32>) {
         let mut loss_derivatives: Vec<f32> = vec![];
         for (zipped_output, zipped_target) in output.iter().zip(targets) {
-            loss_derivatives.push(self.lossfunction.derivative(zipped_output, zipped_target));
+            loss_derivatives.push(self.lossfunction.derivative(zipped_output, zipped_target, output.len()));
         }
 
         let mut weight_derivatives: Vec<Vec<f32>> = vec![];

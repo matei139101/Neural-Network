@@ -1,1 +1,0 @@
-cos useable to compare vectors to other vectors

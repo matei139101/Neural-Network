@@ -104,7 +104,7 @@ impl Layer for Dense {
         logger::log(DebugTier::LOW, format!("Old layer weights: {:?}", self.weights));
         for (input, weight_derivative_set) in math::average_third_dimension(self.derivatives.clone()).iter().enumerate() {
             for (index, derivative) in weight_derivative_set.iter().enumerate() {
-                self.weights[input][index] -= self.weights[input][index] * derivative * learning_rate;
+                self.weights[input][index] -= derivative * learning_rate;
             }
         }
 
