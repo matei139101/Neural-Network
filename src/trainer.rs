@@ -17,14 +17,15 @@ impl Trainer {
 
     pub fn train(&mut self, epochs: usize, learning_rate: f32) {
         for epoch in 0..epochs {
-            let zipped_input_targets = self.input.iter().zip(self.targets.iter());
+            // Run model epochs
             let mut epoch_output: Vec<Vec<f32>> = vec![];
-            for (input_vec, target_vec) in zipped_input_targets {
-                let output = self.model.predict(input_vec);
+            for (index, _) in self.input.iter().enumerate() {
+                let output = self.model.predict(&self.input[index]);
                 epoch_output.push(output.clone());
-                self.model.back_propagate(&output, target_vec);
+                self.model.back_propagate(&output, &self.targets[index]);
             }
 
+            
             for layer in &mut self.model.layers {
                 layer.train(learning_rate);
             }
