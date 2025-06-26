@@ -1,32 +1,28 @@
-mod engine;
+use activations::sigmoid::Sigmoid;
+use layers::dense::Dense;
+use lossfunctions::meansquarederror::MeanSquaredError;
+use model::Model;
+use trainer::Trainer;
+
+use crate::utils::dataset::Dataset;
+
+mod layers;
+mod activations;
+mod lossfunctions;
 mod utils;
+mod model;
+mod trainer;
 
-const INPUT_DATA: [[i8; 5]; 5]= [
-    [1, 1, 1, 0, 1],
-    [1, 0, 0, 1, 1],
-    [0, 1, 1, 1, 0],
-    [0, 1, 0, 0, 1],
-    [1, 1, 1, 1, 0]
-];
-
-const CORRECTION_DATA: [bool; 5] = [
-    true, true, false, false, false
-];
-
-///NOTES:
-///https://developers-dot-devsite-v2-prod.appspot.com/machine-learning/crash-course/backprop-scroll
-/// 
 fn main() {
-    //println!("{}", rand::thread_rng().gen_range(-1.0..1.0));
-    let mut weights: [[f32; 5]; 1] = [
-        [0.0; 5]
-    ];
+    let dataset = Dataset::new();
+    
+    let mut model: Model = Model::new( Box::new(MeanSquaredError {}));
+    model.add_layer(Box::new(Dense::new(28*28, 256, Box::new(Sigmoid {}))));
+    model.add_layer(Box::new(Dense::new(256, 128, Box::new(Sigmoid {}))));
+    model.add_layer(Box::new(Dense::new(128, 64, Box::new(Sigmoid {}))));
+    model.add_layer(Box::new(Dense::new(64, 10, Box::new(Sigmoid {}))));
+    model.prepare();
 
-    for layer in weights.iter_mut() {
-        for weight in layer.iter_mut() {
-            *weight = utils::random_number(-1f32, 1f32);
-        }
-    }
-
-    engine::run_engine(&INPUT_DATA, &CORRECTION_DATA, &mut weights, 100);
+    let mut trainer = Trainer::new(model, dataset.get_training_set(), dataset.get_target_set());
+    trainer.train(30, 0.01f32);
 }
