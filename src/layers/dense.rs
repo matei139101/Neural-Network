@@ -1,3 +1,5 @@
+use std::vec;
+
 use crate::{activations::activation::Activation, utils::{logger::{self, DebugTier}, math}};
 use super::layer::Layer;
 
@@ -10,7 +12,6 @@ pub struct Dense {
     weights: Vec<Vec<f32>>,
     net_output: Vec<f32>,
     activated_output: Vec<f32>,
-    derivatives: Vec<Vec<Vec<f32>>>
 }
 
 impl Dense {
@@ -24,8 +25,7 @@ impl Dense {
             input_values: vec![],
             weights: vec![],
             net_output: vec![],
-            activated_output: vec![],
-            derivatives: vec![]
+            activated_output: vec![]
         }
     }
 }
@@ -75,40 +75,32 @@ impl Layer for Dense {
         return &self.weights;
     }
 
-    fn clear_layer(&mut self) {
-        self.derivatives = vec![];
-    }
+    fn back_propagate(&mut self, backwards_derivatives: &Vec<Vec<f32>>) -> Vec<Vec<f32>> {
+        let backward_deltas_sums: Vec<f32> = backwards_derivatives
+            .iter()
+            .map(|v| v.iter().sum())
+            .collect();
 
-    fn back_propagate(&mut self, backwards_derivatives: &Vec<f32>) -> Vec<f32> {
-        let mut layer_derivatives: Vec<Vec<f32>> = vec![];
+        let mut layer_deltas: Vec<Vec<f32>> = vec![];
         for input in &self.input_values {
             let mut derivative_set: Vec<f32> = vec![];
-            for derivative in backwards_derivatives.iter().enumerate() {
+            for derivative in backward_deltas_sums.iter().enumerate() {
                 let derivative_value: f32 = derivative.1 * self.activation.derivative(&self.net_output[derivative.0]) * input;
                 derivative_set.push(derivative_value);
             }
-            layer_derivatives.push(derivative_set);
+            layer_deltas.push(derivative_set);
         }
 
-        self.derivatives.push(layer_derivatives.clone());
-
-        let mut new_derivatives: Vec<f32> = vec![];
-        for derivative_sum in layer_derivatives {
-            new_derivatives.push(derivative_sum.iter().sum());
-        }
-
-        return new_derivatives;
+        return layer_deltas;
     }
 
-    fn train(&mut self, learning_rate: f32) {
+    fn train(&mut self, learning_rate: f32, deltas: Vec<Vec<Vec<f32>>>) {
         logger::log(DebugTier::LOW, format!("Old layer weights: {:?}", self.weights));
-        for (input, weight_derivative_set) in math::average_third_dimension(self.derivatives.clone()).iter().enumerate() {
+        for (input, weight_derivative_set) in math::average_third_dimension(deltas).iter().enumerate() {
             for (index, derivative) in weight_derivative_set.iter().enumerate() {
                 self.weights[input][index] -= derivative * learning_rate;
             }
         }
-
-        self.clear_layer();
         logger::log(DebugTier::LOW, format!("New layer weights: {:?}", self.weights));
     }
 }

@@ -58,16 +58,18 @@ impl Model {
         return loss / count;
     }
 
-    pub fn back_propagate(&mut self, output: &Vec<f32>, targets: &Vec<f32>) {
-        let mut loss_derivatives: Vec<f32> = vec![];
+    pub fn back_propagate(&mut self, output: &Vec<f32>, targets: &Vec<f32>) -> Vec<Vec<Vec<f32>>> {
+        // To change
+        let mut loss_derivatives: Vec<Vec<f32>> = vec![];
         for (zipped_output, zipped_target) in output.iter().zip(targets) {
-            loss_derivatives.push(self.lossfunction.derivative(zipped_output, zipped_target, output.len()));
+            loss_derivatives.push(vec![self.lossfunction.derivative(zipped_output, zipped_target, output.len())]);
         }
 
-        let mut weight_derivatives: Vec<Vec<f32>> = vec![];
-        weight_derivatives.push(loss_derivatives);
+        let mut deltas: Vec<Vec<Vec<f32>>> = vec![loss_derivatives];
         for layer in (0..self.layers.len()).rev() {
-            weight_derivatives.push(self.layers[layer].back_propagate(&weight_derivatives[&weight_derivatives.len()-1]));
+            deltas.push(self.layers[layer].back_propagate(&deltas[&deltas.len()-1]));
         }
+
+        return deltas;
     }
 }
