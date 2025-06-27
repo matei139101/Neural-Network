@@ -1,6 +1,6 @@
 use std::vec;
 
-use crate::{activations::activation::Activation, utils::{logger::{self, DebugTier}, math}};
+use crate::{activations::activation::Activation, utils::{layeroutput::LayerOutput, logger::{self, DebugTier}, math}};
 use super::layer::Layer;
 
 
@@ -8,10 +8,7 @@ pub struct Dense {
     inputs: usize,
     neurons: usize,
     activation: Box<dyn Activation>,
-    input_values: Vec<f32>,
     weights: Vec<Vec<f32>>,
-    net_output: Vec<f32>,
-    activated_output: Vec<f32>,
 }
 
 impl Dense {
@@ -22,25 +19,21 @@ impl Dense {
             inputs: inputs,
             neurons: neurons,
             activation: activation,
-            input_values: vec![],
             weights: vec![],
-            net_output: vec![],
-            activated_output: vec![]
         }
     }
 }
 
 impl Layer for Dense {
-    fn process(&mut self, input: &Vec<f32>) -> &Vec<f32> {
+    fn process(&self, input: &Vec<f32>) -> LayerOutput {
         logger::log(DebugTier::MEDIUM, format!("Processing layer... "));
-        //logger::log(DebugTier::LOW, format!("Layer weights: {:?}", weights));
 
-        self.input_values = input.clone();
-        self.net_output = math::dot_product(&input, &self.weights);
-        self.activated_output = self.activation.calculate(&self.net_output);
+        let net_output = math::dot_product(&input, &self.weights);
+        let activated_output = self.activation.calculate(&net_output);
+        let layer_output = LayerOutput::new(net_output, activated_output);
 
         logger::logln(DebugTier::MEDIUM, format!("Done!"));
-        return &self.activated_output;
+        return layer_output;
     }
 
     fn make_weights (&mut self) {
@@ -75,17 +68,17 @@ impl Layer for Dense {
         return &self.weights;
     }
 
-    fn back_propagate(&mut self, backwards_derivatives: &Vec<Vec<f32>>) -> Vec<Vec<f32>> {
+    fn back_propagate(&self, backwards_derivatives: &Vec<Vec<f32>>, input: &Vec<f32>, layer_output: &LayerOutput) -> Vec<Vec<f32>> {
         let backward_deltas_sums: Vec<f32> = backwards_derivatives
             .iter()
             .map(|v| v.iter().sum())
             .collect();
 
         let mut layer_deltas: Vec<Vec<f32>> = vec![];
-        for input in &self.input_values {
+        for input in input {
             let mut derivative_set: Vec<f32> = vec![];
             for derivative in backward_deltas_sums.iter().enumerate() {
-                let derivative_value: f32 = derivative.1 * self.activation.derivative(&self.net_output[derivative.0]) * input;
+                let derivative_value: f32 = derivative.1 * self.activation.derivative(&layer_output.net_output[derivative.0]) * input;
                 derivative_set.push(derivative_value);
             }
             layer_deltas.push(derivative_set);
