@@ -3,14 +3,14 @@ use std::{usize, vec};
 use crate::{layers::layer::Layer, lossfunctions::lossfunction::LossFunction, utils::{logger::{self, DebugTier}, outputwrappers::{LayerOutput, ModelOutput}}};
 
 pub struct Model {
-    pub layers: Vec<Box<dyn Layer>>,
+    pub layers: Vec<Box<dyn Layer + Sync>>,
 
     weights: Vec<Vec<Vec<f32>>>,
-    lossfunction: Box<dyn LossFunction>,
+    lossfunction: Box<dyn LossFunction + Sync>,
 }
 
 impl Model {
-    pub fn new(lossfunction: Box<dyn LossFunction>) -> Self {
+    pub fn new(lossfunction: Box<dyn LossFunction + Sync>) -> Self {
         Model {
             weights: vec![],
             layers: vec![],
@@ -18,15 +18,15 @@ impl Model {
         }
     }
 
-    pub fn add_layer(&mut self, layer: Box<dyn Layer>) {
+    pub fn add_layer(&mut self, layer: Box<dyn Layer + Sync>) {
         self.layers.push(layer);
     }
 
-    pub fn predict(&mut self, input: &Vec<f32>) -> ModelOutput {
+    pub fn predict(&self, input: &Vec<f32>) -> ModelOutput {
         logger::log(DebugTier::HIGH, format!("Starting model..."));
         
         let mut output: ModelOutput = ModelOutput::new();
-        for (index, layer) in self.layers.iter_mut().enumerate() {
+        for (index, layer) in self.layers.iter().enumerate() {
             if index == 0 {
                 output.push(layer.process(&LayerOutput::new(vec![], input.clone())));
             } else {
@@ -70,7 +70,7 @@ impl Model {
         return loss / count;
     }
 
-    pub fn back_propagate(&mut self, input: &Vec<f32>, output: &ModelOutput, targets: &Vec<f32>) -> Vec<Vec<Vec<f32>>> {
+    pub fn back_propagate(&self, input: &Vec<f32>, output: &ModelOutput, targets: &Vec<f32>) -> Vec<Vec<Vec<f32>>> {
         let mut deltas: Vec<Vec<Vec<f32>>> = vec![];
 
         let mut loss_derivatives: Vec<Vec<f32>> = vec![];

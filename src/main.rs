@@ -24,5 +24,5 @@ fn main() {
     model.prepare();
 
     let mut trainer = Trainer::new(model, dataset.get_training_set(), dataset.get_target_set());
-    trainer.train(30, 0.5f32);
+    trainer.train(2, 0.01f32);
 }
