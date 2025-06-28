@@ -1,5 +1,6 @@
 use std::{usize, vec};
-use crate::{layers::layer::Layer, lossfunctions::lossfunction::LossFunction, utils::{layeroutput::LayerOutput, logger::{self, DebugTier}}};
+
+use crate::{layers::layer::Layer, lossfunctions::lossfunction::LossFunction, utils::{logger::{self, DebugTier}, outputwrappers::{LayerOutput, ModelOutput}}};
 
 pub struct Model {
     pub layers: Vec<Box<dyn Layer>>,
@@ -21,12 +22,16 @@ impl Model {
         self.layers.push(layer);
     }
 
-    pub fn predict(&mut self, input: &Vec<f32>) -> Vec<LayerOutput> {
+    pub fn predict(&mut self, input: &Vec<f32>) -> ModelOutput {
         logger::log(DebugTier::HIGH, format!("Starting model..."));
         
-        let mut output: Vec<LayerOutput> = vec![LayerOutput::new(vec![], input.clone())];
-        for layer in &mut self.layers {
-            output.push(layer.process(&output[output.len() - 1].activated_output));
+        let mut output: ModelOutput = ModelOutput::new();
+        for (index, layer) in self.layers.iter_mut().enumerate() {
+            if index == 0 {
+                output.push(layer.process(&LayerOutput::new(vec![], input.clone())));
+            } else {
+                output.push(layer.process(&output.last()));
+            }
         }
 
         logger::log(DebugTier::HIGH, format!("Ended model"));
@@ -46,13 +51,16 @@ impl Model {
         }
     }
 
-    pub fn loss(&self, output: &Vec<Vec<LayerOutput>>, targets: &Vec<Vec<f32>>) -> f32 {
+    pub fn loss(&self, output: &Vec<ModelOutput>, targets: &Vec<Vec<f32>>) -> f32 {
         let mut loss: f32 = 0f32;
-        let activated_outputs: Vec<Vec<f32>> = output
+        let activated_outputs: Vec<&Vec<f32>> = output
             .iter()
-            .map(|layer| layer.activated_output.clone())
+            .flat_map(|layer_outputs| {
+                layer_outputs.output.iter().map(|lo| &lo.activated_output)
+            })
             .collect();
-        let zipped_output_targets = output.iter().zip(targets);
+
+        let zipped_output_targets = activated_outputs.iter().zip(targets);
         let count = zipped_output_targets.len() as f32;
     
         for (zipped_output, zipped_target) in zipped_output_targets {
@@ -62,16 +70,22 @@ impl Model {
         return loss / count;
     }
 
-    pub fn back_propagate(&mut self, input: &Vec<f32>, output: &Vec<LayerOutput>, targets: &Vec<f32>) -> Vec<Vec<Vec<f32>>> {
-        // To change
-        let mut loss_derivatives: Vec<Vec<f32>> = vec![];
-        for (index, _) in output[output.len() - 1].net_output.iter().enumerate() {
-            loss_derivatives.push(vec![self.lossfunction.derivative(&output[output.len() - 1].net_output[index], &targets[index], output[output.len() - 1].net_output.len())]);
-        }
+    pub fn back_propagate(&mut self, input: &Vec<f32>, output: &ModelOutput, targets: &Vec<f32>) -> Vec<Vec<Vec<f32>>> {
+        let mut deltas: Vec<Vec<Vec<f32>>> = vec![];
 
-        let mut deltas: Vec<Vec<Vec<f32>>> = vec![loss_derivatives];
-        for layer in (0..self.layers.len()).rev() {
-            deltas.push(self.layers[layer].back_propagate(&deltas[&deltas.len()-1], input, &output[layer]));
+        let mut loss_derivatives: Vec<Vec<f32>> = vec![];
+        for (index, _) in output.last().net_output.iter().enumerate() {
+            loss_derivatives.push(vec![self.lossfunction.derivative(&output.last().net_output[index], &targets[index], output.last().net_output.len())]);
+        }
+        deltas.push(loss_derivatives);
+
+
+        for layer_index in (0..self.layers.len()).rev() {
+            if layer_index == 0 {
+                deltas.push(self.layers[layer_index].back_propagate(&deltas.last().unwrap(), &input, &output.get_by_layer(layer_index)));
+            } else {
+                deltas.push(self.layers[layer_index].back_propagate(&deltas.last().unwrap(), &output.get_by_layer(layer_index - 1).activated_output, &output.get_by_layer(layer_index)));
+            }
         }
 
         return deltas;

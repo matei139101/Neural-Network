@@ -1,4 +1,4 @@
-use crate::{model::Model, utils::{layeroutput::LayerOutput, logger::{self, DebugTier}}};
+use crate::{model::Model, utils::{logger::{self, DebugTier}, outputwrappers::{ModelOutput}}};
 
 pub struct Trainer {
     model: Model,
@@ -18,7 +18,7 @@ impl Trainer {
     pub fn train(&mut self, epochs: usize, learning_rate: f32) {
         for epoch in 0..epochs {
             // Run model epochs
-            let mut epoch_output: Vec<Vec<LayerOutput>> = vec![];
+            let mut epoch_output: Vec<ModelOutput> = vec![];
             let mut epoch_deltas: Vec<Vec<Vec<Vec<f32>>>> = vec![];
             for (index, _) in self.input.iter().enumerate() {
                 let output = self.model.predict(&self.input[index]);
